@@ -14,7 +14,7 @@ CORS(app)
 
 # ---------- Initialize Google GenAI SDK ----------
 # Your verified active API key is preserved exactly:
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyBhyHy6X8VGzFo_RSfjNI8TVMhDx_SQOA8")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ---------- TRANSLATION ----------
