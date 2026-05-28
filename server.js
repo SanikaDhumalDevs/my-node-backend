@@ -62,7 +62,7 @@ app.use((err, req, res, next) => {
 
 // ✅ Connect to MongoDB and start server
 // ✅ Connect to MongoDB and start server
-mongoose.connect("mongodb+srv://sanikadhumal149:password@123@cluster0.yourcluster.mongodb.net/expense_tracker?retryWrites=true&w=majority", {
+mongoose.connect("mongodb+srv://expense_user:SecurePass123@cluster0.yourcluster.mongodb.net/expense_tracker?retryWrites=true&w=majority", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
