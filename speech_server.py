@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from deep_translator import GoogleTranslator
@@ -79,28 +80,16 @@ def ocr():
         img = Image.open(image_file)
 
         prompt = """
-        Analyze this receipt, bill, or invoice image. It may contain printed text, tables, messy human handwriting, or be written in regional Indian languages (especially Marathi).
-        
-        Strict Translation Rule:
-        - If any text, product name, or unit is in Marathi (or any other language), you MUST translate it accurately to English. 
-        - Clean up messy handwriting into clear English text.
+        Analyze this receipt, bill, or invoice image. It may contain printed text, tables, or messy human handwriting.
+        Extract the following data points and return them strictly in the JSON format requested.
 
-        Extract all individual purchased items from the bill and return them strictly as a JSON array of objects. 
-        Even if there is only 1 item, return it as an array with 1 object.
-
-        JSON Schema per item:
-        [
-          {
-            "name": "The primary product name translated strictly to English. Avoid store names.",
-            "purchaseDate": "The transaction date as YYYY-MM-DD. If not visible, return empty string.",
-            "quantity": 1,
-            "unit": "Must strictly be mapped to one of: 'kg', 'liter', 'packet', 'piece', 'tablet'. Translate Marathi units (like 'नग' to 'piece', 'पैकेट' to 'packet', etc.).",
-            "warrantyPeriod": 12,
-            "expiryDate": "The expiration date of the item as YYYY-MM-DD. If not visible, return empty string."
-          }
-        ]
-        
-        Return ONLY valid JSON. Do not include markdown backticks or any wrapper text.
+        Field Constraints:
+        1. "name": The primary product name, item description, or medication name. Avoid store names, billing metadata, or tax terms.
+        2. "purchaseDate": The transaction date. Format strictly as YYYY-MM-DD. If not visible, return empty string "".
+        3. "quantity": The numeric value of the quantity purchased. If not visible, default to 1.
+        4. "unit": Must strictly be mapped to one of these five options: "kg", "liter", "packet", "piece", "tablet". (Map variations like 'g' or 'grams' to 'kg', 'ml' to 'liter', 'tabs' to 'tablet', 'pcs' to 'piece').
+        5. "warrantyPeriod": An integer representing warranty length in months. Convert year values to months (e.g. "1 year" should be 12). If not visible, return null.
+        6. "expiryDate": The expiration date of the item. Format strictly as YYYY-MM-DD. If not visible, return empty string "".
         """
 
         response = client.models.generate_content(
@@ -173,10 +162,11 @@ def get_medicine_info():
         medicine_name = data.get("medicineName", "")
         
         if not medicine_name:
-          return jsonify({"error": "Medicine name is required"}), 400
+            return jsonify({"error": "Medicine name is required"}), 400
 
         prompt = f"""
-        Provide clear, structured, and easy-to-read medical information about the medicine "{medicine_name}" in exactly five distinct points.
+       
+        Provide clear, structured, and easy-to-read medical information about the medicine "${medicine_name}" in exactly five distinct points.
         
         Format your response as five separate paragraphs. You must separate each paragraph using EXACTLY two newlines (a blank line) so the frontend code can split them into individual layout cards.
         
@@ -191,7 +181,7 @@ def get_medicine_info():
         🛡️ CRITICAL PRECAUTIONS: [State crucial warnings or safety guidelines.]
         
         ♻️ SAFE ECO-DISPOSAL & DONATION: [Provide instructions on how to safely dispose of this specific medicine if expired (avoiding flushing or trash throwing to prevent chemical water pollution), or if it can be donated to a local charitable free clinic if unopened with more than 30 days remaining.]
-        """
+       """ ; 
 
         response = client.models.generate_content(
             model='gemini-2.5-flash',
